@@ -83,4 +83,247 @@ tbody tr:hover{background:#0d1629}
 <option value="">— Escolha —</option>
 <option>Alvorada</option>
 <option>Vila Real Futebol Club</option>
+<option>ENVICTOR'S</option>
+<option>Moto futebol clube</option>
+<option>SEM LIMITES FC</option>
+<option>Resenha18fc</option>
+<option>Ratos F.C</option>
+<option>Meninos da feira</option>
+<option>Novo aurora f.c</option>
+<option>Paysandu city fcs</option>
+</select>
+</div>
+<div>
+<label for="key">Chave de acesso</label>
+<input id="key" type="password" placeholder="Informe a chave do seu time" />
+</div>
+</div>
+<div class="row" style="margin-top:10px">
+<button id="enterBtn">Entrar</button>
+<span class="hint">Acesso restrito por time. Guarde sua chave com segurança.</span>
+</div>
+</section>
+
+
+<!-- App Card -->
+<section id="appCard" class="card" style="display:none">
+<div class="bar">
+<div class="row" style="gap:12px">
+<h2 id="teamTitle" style="margin:0"></h2>
+<span class="tag">Somente seu time</span>
+</div>
+<button id="refreshBtn" class="ghost">Recarregar</button>
+</div>
+
+
+<div id="tableWrap">
+<div class="empty">Carregando jogadores…</div>
+</div>
+<form id="playerForm" class="form">
+<input id="doc" type="text" placeholder="RG ou CPF" required />
+<button id="saveBtn" type="submit">Adicionar / Salvar</button>
+</form>
+<div class="hint" style="margin-top:6px">Dica: clique em **Editar** para carregar os dados no formulário acima.</div>
+</section>
+</main>
+
+
+<script>
+// ===== CONFIG =====
+const WEB_APP_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // ← cole a URL do seu Apps Script publicado
+
+
+// ===== STATE =====
+let session = { team:"", apiKey:"" };
+let editing = null; // rowId quando em edição
+
+
+// ===== HELPERS =====
+const qs = s => document.querySelector(s);
+const elLogin = qs('#loginCard');
+const elApp = qs('#appCard');
+const elTeam = qs('#team');
+const elKey = qs('#key');
+const elEnter = qs('#enterBtn');
+const elTitle = qs('#teamTitle');
+const elUserTag = qs('#userTag');
+const elLogout = qs('#logoutBtn');
+const elRefresh = qs('#refreshBtn');
+const elTableWrap = qs('#tableWrap');
+const elForm = qs('#playerForm');
+const elName = qs('#fullName');
+const elDoc = qs('#doc');
+
+
+function slugTeam(name){
+return name.trim().toLowerCase();
+}
+
+
+function storeSession(){
+localStorage.setItem('apecad_session', JSON.stringify(session));
+}
+function loadSession(){
+try { return JSON.parse(localStorage.getItem('apecad_session')||'{}'); } catch(e){ return {}; }
+}
+
+
+function show(view){
+if(view==='app'){
+elLogin.style.display='none';
+elApp.style.display='block';
+elTitle.textContent = session.team;
+elUserTag.style.display='inline-block';
+elUserTag.textContent = `Time: ${session.team}`;
+elLogout.style.display='inline-block';
+} else {
+elLogin.style.display='block';
+elApp.style.display='none';
+elUserTag.style.display='none';
+elLogout.style.display='none';
+}
+}
+  function renderTable(rows){
+if(!rows || !rows.length){
+elTableWrap.innerHTML = `<div class="empty">Nenhum jogador cadastrado ainda.</div>`;
+return;
+}
+const html = [`<table><thead><tr>
+<th>Nome completo</th><th>RG/CPF</th><th style="width:180px">Ações</th>
+</tr></thead><tbody>`];
+for(const r of rows){
+html.push(`<tr data-id="${r.rowId}"><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.doc)}</td>
+<td>
+<div class="actions">
+<button class="pill ok" data-act="edit">Editar</button>
+<button class="pill del" data-act="del">Excluir</button>
+</div>
+</td></tr>`);
+}
+html.push('</tbody></table>');
+elTableWrap.innerHTML = html.join('');
+// wire actions
+elTableWrap.querySelectorAll('button[data-act]').forEach(btn=>{
+btn.addEventListener('click', async (ev)=>{
+const act = btn.getAttribute('data-act');
+const rowId = btn.closest('tr').getAttribute('data-id');
+if(act==='edit'){
+const row = rows.find(r=>r.rowId===rowId);
+editing = rowId;
+elName.value = row.name;
+elDoc.value = row.doc;
+elName.focus();
+}
+if(act==='del'){
+if(confirm('Excluir este atleta?')){
+await apiDelete(rowId);
+await loadData();
+}
+}
+});
+});
+}
+
+
+function escapeHtml(s){
+return String(s||'').replace(/[&<>"]+/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+}
+
+
+// ===== API =====
+  async function apiList(){
+}
+
+
+async function apiDelete(rowId){
+const res = await fetch(WEB_APP_URL,{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+route:'del',
+team: slugTeam(session.team),
+apiKey: session.apiKey,
+rowId
+})
+});
+const data = await res.json();
+if(!data.ok) throw new Error(data.error||'Erro');
+return data;
+}
+
+
+async function loadData(){
+elTableWrap.innerHTML = `<div class="empty">Carregando jogadores…</div>`;
+try{
+const rows = await apiList();
+renderTable(rows);
+}catch(err){
+elTableWrap.innerHTML = `<div class="empty">Erro: ${escapeHtml(err.message)}</div>`;
+}
+}
+
+
+// ===== EVENTS =====
+elEnter.addEventListener('click', async ()=>{
+const team = elTeam.value.trim();
+const apiKey = elKey.value.trim();
+if(!team || !apiKey){
+alert('Selecione o time e informe a chave.');
+return;
+}
+session = { team, apiKey };
+storeSession();
+show('app');
+loadData();
+});
+
+
+elLogout.addEventListener('click', ()=>{
+localStorage.removeItem('apecad_session');
+session = {team:'', apiKey:''};
+editing = null;
+elName.value = '';
+elDoc.value='';
+elTeam.value='';
+elKey.value='';
+show('login');
+});
+
+
+elRefresh.addEventListener('click', loadData);
+
+
+elForm.addEventListener('submit', async (ev)=>{
+ev.preventDefault();
+const name = elName.value.trim();
+const doc = elDoc.value.trim();
+if(!name || !doc){
+alert('Preencha nome e RG/CPF.');
+return;
+}
+  try{
+await apiSave({rowId: editing, name, doc});
+editing = null;
+elName.value='';
+elDoc.value='';
+await loadData();
+}catch(err){
+alert('Erro ao salvar: '+err.message);
+}
+});
+
+
+// ===== INIT =====
+(async function init(){
+const saved = loadSession();
+if(saved && saved.team && saved.apiKey){
+session = saved;
+show('app');
+loadData();
+} else {
+show('login');
+}
+})();
+</script>
+</body>
 </html>
