@@ -23,24 +23,34 @@ button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--muted)}
 .tag{background:#172036;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:#cbd5e1}
-.summary{font-size:13px;color:#cbd5e1}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tool{display:flex;gap:8px;align-items:center}
+.tool input{min-width:220px}
+
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px;min-height:64px}
-table{width:100%;border-collapse:collapse;min-width:560px}
+table{width:100%;border-collapse:collapse;min-width:640px}
 thead th{background:#0c1424;font-size:12px;color:#a3a3a3;text-align:left;padding:10px;border-bottom:1px solid var(--line)}
 tbody td{padding:10px;border-bottom:1px solid var(--line)}
 tbody tr:hover{background:#0d1629}
 .actions{display:flex;gap:8px}
-.pill{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:#0a0f1a;color:var(--ink);cursor:pointer}
+.pill{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:#0a0f1a;color:#e5e7eb;cursor:pointer}
 .pill.ok{border-color:#064e3b;background:rgba(34,197,94,.12);color:#bbf7d0}
 .pill.del{border-color:#7f1d1d;background:rgba(239,68,68,.12);color:#fecaca}
+
 .form{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:12px}
 @media (max-width:700px){.form{grid-template-columns:1fr}}
 .empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:#9ca3af;text-align:center}
+
 .toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid var(--line);padding:10px 14px;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.25s}
 .toast.show{opacity:1;transform:translateY(0)}
+
 .loader{display:inline-block;width:14px;height:14px;border:2px solid #94a3b8;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
 .err{background:rgba(239,68,68,.12);border:1px solid #7f1d1d;color:#fecaca;padding:10px;border-radius:10px;margin-top:8px}
+.ok{background:rgba(34,197,94,.12);border:1px solid #064e3b;color:#bbf7d0;padding:10px;border-radius:10px;margin-top:8px}
+.summary{font-size:13px;color:#cbd5e1}
 </style>
 </head>
 <body>
@@ -53,7 +63,7 @@ tbody tr:hover{background:#0d1629}
 </header>
 
 <main class="wrap">
-  <!-- Login -->
+  <!-- LOGIN -->
   <section id="loginCard" class="card">
     <h2 style="margin:0 0 10px">Entrar no seu Time</h2>
     <div class="grid cols-2">
@@ -61,16 +71,16 @@ tbody tr:hover{background:#0d1629}
         <label for="team">Selecione o time</label>
         <select id="team">
           <option value="">— Escolha —</option>
-         <option>Alvorada</option>
-<option>Vila Real Futebol Club</option>
-<option>Envictors</option>
-<option>Moto Futebol Clube</option>
-<option>Sem Limites FC</option>
-<option>Resenha18 FC</option>
-<option>Ratos FC</option>
-<option>Meninos da Feira</option>
-<option>Novo Aurora FC</option>
-<option>Paysandu City FCS</option>
+          <option>Alvorada</option>
+          <option>Vila Real Futebol Club</option>
+          <option>ENVICTOR'S</option>
+          <option>Moto futebol clube</option>
+          <option>SEM LIMITES FC</option>
+          <option>Resenha18fc</option>
+          <option>Ratos F.C</option>
+          <option>Meninos da feira</option>
+          <option>Novo aurora f.c</option>
+          <option>Paysandu city fcs</option>
         </select>
       </div>
       <div>
@@ -85,15 +95,19 @@ tbody tr:hover{background:#0d1629}
     <div id="loginError" class="err" style="display:none"></div>
   </section>
 
-  <!-- App -->
+  <!-- APP -->
   <section id="appCard" class="card" style="display:none">
-    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
       <div class="row" style="gap:12px;align-items:baseline">
         <h2 id="teamTitle" style="margin:0"></h2>
         <span class="tag">Somente seu time</span>
         <span id="summary" class="summary"></span>
       </div>
-      <button id="refreshBtn" class="ghost">Recarregar</button>
+      <div class="tools">
+        <div class="tool"><input id="search" type="text" placeholder="Buscar por nome/CPF…"/></div>
+        <button id="exportBtn" class="ghost">Exportar CSV</button>
+        <button id="refreshBtn" class="ghost">Recarregar</button>
+      </div>
     </div>
 
     <div id="tableWrap" class="table-wrap">
@@ -107,26 +121,29 @@ tbody tr:hover{background:#0d1629}
     </form>
     <div class="hint" style="margin-top:6px">Dica: clique em <b>Editar</b> para carregar os dados e salvar as alterações.</div>
     <div id="saveError" class="err" style="display:none"></div>
+    <div id="saveOk" class="ok" style="display:none"></div>
   </section>
 </main>
 
 <div id="toast" class="toast"></div>
 
 <script>
-/* ====== COLE AQUI A URL /exec DO APPS SCRIPT ====== */
+/* ===== COLE AQUI A URL /exec DO APPS SCRIPT ===== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyNYsoxwF5qtDAH6maEoGm1FYpfhT3d4b2nySoqU9xe6FFwhwZJ0aAmnMSYtgos_pDseA/exec";
 
-/* ====== STATE ====== */
+/* ===== STATE ===== */
 let session = { team:"", apiKey:"" };
 let editing = null;
+let rowsCache = []; // última lista vinda do servidor
 
-/* ====== HELPERS ====== */
+/* ===== HELPERS ===== */
 const qs = s => document.querySelector(s);
 const elLogin=qs('#loginCard'), elApp=qs('#appCard'), elTeam=qs('#team'), elKey=qs('#key');
 const elEnter=qs('#enterBtn'), elTitle=qs('#teamTitle'), elTag=qs('#userTag'), elLogout=qs('#logoutBtn');
 const elRefresh=qs('#refreshBtn'), elTable=qs('#tableWrap'), elForm=qs('#playerForm');
-const elName=qs('#fullName'), elDoc=qs('#doc'), elToast=qs('#toast');
-const elSummary=qs('#summary'), elLoginHint=qs('#loginHint'), elLoginError=qs('#loginError'), elSaveError=qs('#saveError');
+const elName=qs('#fullName'), elDoc=qs('#doc'), elToast=qs('#toast'), elSearch=qs('#search');
+const elSummary=qs('#summary'), elLoginHint=qs('#loginHint'), elLoginError=qs('#loginError');
+const elSaveError=qs('#saveError'), elSaveOk=qs('#saveOk'), elExport=qs('#exportBtn');
 
 function show(view){
   if(view==='app'){
@@ -144,17 +161,21 @@ function slugTeam(name){return (name||'').normalize('NFD').replace(/[\u0300-\u03
 function saveSess(){localStorage.setItem('apecad_session',JSON.stringify(session));}
 function loadSess(){try{return JSON.parse(localStorage.getItem('apecad_session')||'{}')}catch(e){return {}}}
 
-/* ====== API (form-urlencoded → sem CORS) ====== */
+/* ===== API (form-urlencoded → sem CORS) ===== */
 async function apiCall(payload){
   const res = await fetch(WEB_APP_URL, {
     method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
     body: new URLSearchParams(payload)
   });
-  let data; 
-  try{ data = await res.json(); }
-  catch(e){ throw new Error('Resposta inválida do servidor'); }
-  if(!data.ok) throw new Error(data.error||'Erro');
+
+  let text;
+  try { text = await res.text(); } catch { throw new Error('Sem resposta do servidor'); }
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error(`Resposta inválida do servidor: ${text.slice(0,200)}`); }
+
+  if (!data.ok) { throw new Error(data.error || 'Erro desconhecido'); }
   return data;
 }
 async function apiList(){
@@ -168,12 +189,19 @@ async function apiDelete(rowId){
   return apiCall({ route:'del', team: slugTeam(session.team), apiKey: session.apiKey, rowId });
 }
 
-/* ====== RENDER ====== */
-function renderTable(rows){
+/* ===== RENDER ===== */
+function applyFilter(rows, q){
+  if(!q) return rows;
+  const s = q.toLowerCase();
+  return rows.filter(r => (r.name||'').toLowerCase().includes(s) || (r.doc||'').toLowerCase().includes(s));
+}
+function renderSummary(rows){
   const total = rows.length;
-  const last = rows.reduce((a,b)=> a || b.modified_on, '');
+  const last = rows.reduce((acc,cur)=> acc || cur.modified_on, '');
   elSummary.textContent = total ? `• ${total} atleta(s)` + (last?` • Atualizado: ${new Date(last).toLocaleString()}`:'') : '';
-
+}
+function renderTable(rows){
+  renderSummary(rows);
   if(!rows.length){ elTable.innerHTML=`<div class="empty">Nenhum atleta cadastrado.</div>`; return; }
   const html=[`<table><thead><tr><th>Nome completo</th><th>RG/CPF</th><th style="width:200px">Ações</th></tr></thead><tbody>`];
   for(const r of rows){
@@ -186,7 +214,6 @@ function renderTable(rows){
   html.push('</tbody></table>');
   elTable.innerHTML = html.join('');
 
-  // actions por delegação
   const tbody = elTable.querySelector('tbody');
   const handler = async ev=>{
     const btn = ev.target.closest('button[data-act]'); if(!btn) return;
@@ -198,25 +225,46 @@ function renderTable(rows){
       elName.focus(); toast('Editando…');
     }else if(act==='del'){
       if(!confirm('Excluir este atleta?')) return;
-      try{ await apiDelete(id); toast('Excluído'); await loadData(); }catch(e){ showSaveError(e.message); }
+      try{ await apiDelete(id); toast('Excluído'); await loadData(); }
+      catch(e){ showSaveError(e.message); }
     }
   };
-  tbody.addEventListener('click', handler, { once:true }); // reanexa a cada render
+  tbody.addEventListener('click', handler, { once:true });
 }
 
-/* ====== LOAD ====== */
+/* ===== LOAD ===== */
 async function loadData(){
-  elSaveError.style.display='none';
+  hideSaveMessages();
   elTable.innerHTML = `<div class="empty">Carregando jogadores… <span class="loader"></span></div>`;
-  try{ const rows = await apiList(); renderTable(rows); }
-  catch(e){ elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`; }
+  try{
+    rowsCache = await apiList();
+    const filtered = applyFilter(rowsCache, elSearch.value.trim());
+    renderTable(filtered);
+  }catch(e){
+    elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+  }
 }
 
-/* ====== ERR UI ====== */
+/* ===== CSV ===== */
+function exportCSV(){
+  const filtered = applyFilter(rowsCache, elSearch.value.trim());
+  const head = ['Nome completo','RG/CPF'];
+  const lines = [head, ...filtered.map(r => [r.name||'', r.doc||''])];
+  const csv = lines.map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `atletas_${slugTeam(session.team)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ===== ERR UI ===== */
+function hideSaveMessages(){ elSaveError.style.display='none'; elSaveOk.style.display='none'; }
 function showLoginError(msg){ elLoginError.textContent = msg; elLoginError.style.display='block'; }
 function showSaveError(msg){ elSaveError.textContent = `Erro: ${msg}`; elSaveError.style.display='block'; }
+function showSaveOk(msg){ elSaveOk.textContent = msg; elSaveOk.style.display='block'; }
 
-/* ====== EVENTS ====== */
+/* ===== EVENTS ===== */
 elEnter.onclick = async ()=>{
   const team = elTeam.value.trim(), apiKey = elKey.value.trim();
   elLoginError.style.display='none';
@@ -239,20 +287,26 @@ elLogout.onclick = ()=>{
   show('login');
 };
 elRefresh.onclick = loadData;
+elExport.onclick = exportCSV;
+
+elSearch.addEventListener('input', ()=>{
+  const filtered = applyFilter(rowsCache, elSearch.value.trim());
+  renderTable(filtered);
+});
 
 elForm.onsubmit = async ev=>{
   ev.preventDefault();
-  elSaveError.style.display='none';
+  hideSaveMessages();
   const name = elName.value.trim(), doc = elDoc.value.trim();
   if(!name || !doc){ showSaveError('Preencha nome e RG/CPF.'); return; }
   try{
     await apiSave({ rowId: editing, name, doc });
     editing=null; elName.value=''; elDoc.value='';
-    toast('Salvo'); await loadData();
+    showSaveOk('Salvo com sucesso'); toast('Salvo'); await loadData();
   }catch(e){ showSaveError(e.message); }
 };
 
-/* ====== INIT ====== */
+/* ===== INIT ===== */
 (function(){
   const saved = loadSess();
   if(saved && saved.team && saved.apiKey){ session=saved; show('app'); loadData(); }
