@@ -1,328 +1,388 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sistema de Cadastro de Atletas — APECAD</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cadastro de Atletas — APECAD</title>
 <style>
 :root{
---bg:#0f172a; /* slate-900 */
---panel:#111827; /* gray-900 */
---ink:#e5e7eb; /* gray-200 */
---muted:#9ca3af; /* gray-400 */
---brand:#f59e0b; /* amber-500 */
---ok:#22c55e; /* green-500 */
---warn:#ef4444; /* red-500 */
---card:#0b1220; /* deep panel */
---line:#1f2937;
---radius:16px;
+  --bg:#0f172a;     /* slate-900 */
+  --panel:#111827;  /* gray-900  */
+  --ink:#e5e7eb;    /* gray-200  */
+  --muted:#9ca3af;  /* gray-400  */
+  --brand:#f59e0b;  /* amber-500 */
+  --ok:#22c55e;     /* green-500 */
+  --warn:#ef4444;   /* red-500   */
+  --line:#1f2937;
+  --card:#0b1220;
+  --radius:16px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(160deg,var(--bg),#060a12);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0));position:sticky;top:0;backdrop-filter:blur(6px);z-index:50}
-h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.3px}
+html,body{height:100%}
+body{
+  margin:0;
+  background:linear-gradient(160deg,var(--bg),#060a12);
+  color:var(--ink);
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif
+}
+header{
+  display:flex;gap:16px;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,0));
+  position:sticky;top:0;backdrop-filter:blur(6px);z-index:50
+}
+h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.2px}
 .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25)
+}
 .grid{display:grid;gap:16px}
 .grid.cols-2{grid-template-columns:1fr 1fr}
 @media (max-width:900px){.grid.cols-2{grid-template-columns:1fr}}
 
-
-/* Login */
-.login{display:grid;gap:14px}
 label{font-size:12px;color:var(--muted)}
-select,input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0a0f1a;color:var(--ink);outline:none}
+select,input{
+  width:100%;padding:12px 14px;border-radius:12px;
+  border:1px solid var(--line);background:#0a0f1a;color:var(--ink);outline:none
+}
 input::placeholder{color:#6b7280}
-button{appearance:none;border:none;border-radius:12px;padding:12px 16px;background:var(--brand);color:#111;font-weight:700;cursor:pointer}
+button{
+  appearance:none;border:none;border-radius:12px;padding:12px 16px;
+  background:var(--brand);color:#111;font-weight:800;cursor:pointer
+}
 button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-.row{display:flex;gap:10px;align-items:center}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--muted)}
 
-
-/* App */
-.bar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
 .tag{background:#172036;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:#cbd5e1}
-.danger{background:rgba(239,68,68,.12);border-color:#7f1d1d;color:#fecaca}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:#0a0f1a;color:#cbd5e1}
 
+.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
 
-table{width:100%;border-collapse:collapse;border:1px solid var(--line);overflow:hidden;border-radius:12px}
-thead th{background:#0c1424;font-size:12px;color:#a3a3a3;text-align:left;padding:10px;border-bottom:1px solid var(--line)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+thead th{
+  background:#0c1424;font-size:12px;color:#a3a3a3;text-align:left;padding:10px;border-bottom:1px solid var(--line)
+}
 tbody td{padding:10px;border-bottom:1px solid var(--line)}
 tbody tr:hover{background:#0d1629}
 
-
 .actions{display:flex;gap:8px}
-.pill{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:#0a0f1a;color:var(--ink);cursor:pointer}
+.pill{
+  padding:6px 10px;border-radius:10px;border:1px solid var(--line);
+  background:#0a0f1a;color:var(--ink);cursor:pointer
+}
 .pill.ok{border-color:#064e3b;background:rgba(34,197,94,.12);color:#bbf7d0}
 .pill.del{border-color:#7f1d1d;background:rgba(239,68,68,.12);color:#fecaca}
-
 
 .form{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:12px}
 @media (max-width:700px){.form{grid-template-columns:1fr}}
 .empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+
+.toast{
+  position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid var(--line);
+  padding:10px 14px;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);
+  transition:.25s
+}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
 <header>
-<h1>Cadastro de Atletas — APECAD</h1>
-<div class="row">
-<span id="userTag" class="tag" style="display:none"></span>
-<button id="logoutBtn" class="ghost" style="display:none">Sair</button>
-</div>
+  <h1>Cadastro de Atletas — APECAD</h1>
+  <div class="row">
+    <span id="userTag" class="badge" style="display:none"></span>
+    <button id="logoutBtn" class="ghost" style="display:none">Sair</button>
+  </div>
 </header>
 
-
 <main class="wrap">
-<!-- Login Card -->
-<section id="loginCard" class="card">
-<h2 style="margin-top:0">Entrar no seu Time</h2>
-<div class="login grid cols-2">
-<div>
-<label for="team">Selecione o time</label>
-<select id="team">
-<option value="">— Escolha —</option>
-<option>Alvorada</option>
+  <!-- Login -->
+  <section id="loginCard" class="card">
+    <h2 style="margin:0 0 10px 0">Entrar no seu Time</h2>
+    <div class="login grid cols-2">
+      <div>
+        <label for="team">Selecione o time</label>
+        <select id="team">
+          <option value="">— Escolha —</option>
+         <option>Alvorada</option>
 <option>Vila Real Futebol Club</option>
-<option>ENVICTOR'S</option>
-<option>Moto futebol clube</option>
-<option>SEM LIMITES FC</option>
-<option>Resenha18fc</option>
-<option>Ratos F.C</option>
-<option>Meninos da feira</option>
-<option>Novo aurora f.c</option>
-<option>Paysandu city fcs</option>
-</select>
-</div>
-<div>
-<label for="key">Chave de acesso</label>
-<input id="key" type="password" placeholder="Informe a chave do seu time" />
-</div>
-</div>
-<div class="row" style="margin-top:10px">
-<button id="enterBtn">Entrar</button>
-<span class="hint">Acesso restrito por time. Guarde sua chave com segurança.</span>
-</div>
-</section>
+<option>Envictors</option>
+<option>Moto Futebol Clube</option>
+<option>Sem Limites FC</option>
+<option>Resenha18 FC</option>
+<option>Ratos FC</option>
+<option>Meninos da Feira</option>
+<option>Novo Aurora FC</option>
+<option>Paysandu City FCS</option>
+        </select>
+      </div>
+      <div>
+        <label for="key">Chave de acesso</label>
+        <input id="key" type="password" placeholder="Informe a chave do seu time"/>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="enterBtn">Entrar</button>
+      <span class="hint">Acesso restrito por time. Guarde sua chave com segurança.</span>
+    </div>
+  </section>
 
+  <!-- App -->
+  <section id="appCard" class="card" style="display:none">
+    <div class="bar">
+      <div class="row" style="gap:12px">
+        <h2 id="teamTitle" style="margin:0"></h2>
+        <span class="tag">Somente seu time</span>
+      </div>
+      <div class="row">
+        <button id="refreshBtn" class="ghost">Recarregar</button>
+      </div>
+    </div>
 
-<!-- App Card -->
-<section id="appCard" class="card" style="display:none">
-<div class="bar">
-<div class="row" style="gap:12px">
-<h2 id="teamTitle" style="margin:0"></h2>
-<span class="tag">Somente seu time</span>
-</div>
-<button id="refreshBtn" class="ghost">Recarregar</button>
-</div>
+    <div id="tableWrap" class="table-wrap">
+      <div class="empty">Carregando jogadores…</div>
+    </div>
 
-
-<div id="tableWrap">
-<div class="empty">Carregando jogadores…</div>
-</div>
-<form id="playerForm" class="form">
-<input id="doc" type="text" placeholder="RG ou CPF" required />
-<button id="saveBtn" type="submit">Adicionar / Salvar</button>
-</form>
-<div class="hint" style="margin-top:6px">Dica: clique em **Editar** para carregar os dados no formulário acima.</div>
-</section>
+    <form id="playerForm" class="form" autocomplete="off">
+      <input id="fullName" type="text" placeholder="Nome completo" required/>
+      <input id="doc" type="text" placeholder="RG ou CPF" required/>
+      <button id="saveBtn" type="submit">Adicionar / Salvar</button>
+    </form>
+    <div class="hint" style="margin-top:6px">Dica: clique em <b>Editar</b> para carregar os dados e salvar as alterações.</div>
+  </section>
 </main>
 
+<div id="toast" class="toast"></div>
 
 <script>
-// ===== CONFIG =====
-const WEB_APP_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // ← cole a URL do seu Apps Script publicado
+/* ========= CONFIG =========
+ * Troque pela URL /exec do seu Apps Script publicado
+ */
+const WEB_APP_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
 
-
-// ===== STATE =====
+/* ========= STATE ========= */
 let session = { team:"", apiKey:"" };
-let editing = null; // rowId quando em edição
+let editing = null;
 
-
-// ===== HELPERS =====
+/* ========= HELPERS ========= */
 const qs = s => document.querySelector(s);
-const elLogin = qs('#loginCard');
-const elApp = qs('#appCard');
-const elTeam = qs('#team');
-const elKey = qs('#key');
-const elEnter = qs('#enterBtn');
-const elTitle = qs('#teamTitle');
-const elUserTag = qs('#userTag');
-const elLogout = qs('#logoutBtn');
-const elRefresh = qs('#refreshBtn');
-const elTableWrap = qs('#tableWrap');
-const elForm = qs('#playerForm');
-const elName = qs('#fullName');
-const elDoc = qs('#doc');
+const elLogin    = qs('#loginCard');
+const elApp      = qs('#appCard');
+const elTeam     = qs('#team');
+const elKey      = qs('#key');
+const elEnter    = qs('#enterBtn');
+const elTitle    = qs('#teamTitle');
+const elUserTag  = qs('#userTag');
+const elLogout   = qs('#logoutBtn');
+const elRefresh  = qs('#refreshBtn');
+const elTable    = qs('#tableWrap');
+const elForm     = qs('#playerForm');
+const elName     = qs('#fullName');
+const elDoc      = qs('#doc');
+const elToast    = qs('#toast');
 
-
-function slugTeam(name){
-return name.trim().toLowerCase();
+function showToast(msg){
+  elToast.textContent = msg;
+  elToast.classList.add('show');
+  setTimeout(()=> elToast.classList.remove('show'), 1800);
 }
-
-
-function storeSession(){
-localStorage.setItem('apecad_session', JSON.stringify(session));
-}
-function loadSession(){
-try { return JSON.parse(localStorage.getItem('apecad_session')||'{}'); } catch(e){ return {}; }
-}
-
-
-function show(view){
-if(view==='app'){
-elLogin.style.display='none';
-elApp.style.display='block';
-elTitle.textContent = session.team;
-elUserTag.style.display='inline-block';
-elUserTag.textContent = `Time: ${session.team}`;
-elLogout.style.display='inline-block';
-} else {
-elLogin.style.display='block';
-elApp.style.display='none';
-elUserTag.style.display='none';
-elLogout.style.display='none';
-}
-}
-  function renderTable(rows){
-if(!rows || !rows.length){
-elTableWrap.innerHTML = `<div class="empty">Nenhum jogador cadastrado ainda.</div>`;
-return;
-}
-const html = [`<table><thead><tr>
-<th>Nome completo</th><th>RG/CPF</th><th style="width:180px">Ações</th>
-</tr></thead><tbody>`];
-for(const r of rows){
-html.push(`<tr data-id="${r.rowId}"><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.doc)}</td>
-<td>
-<div class="actions">
-<button class="pill ok" data-act="edit">Editar</button>
-<button class="pill del" data-act="del">Excluir</button>
-</div>
-</td></tr>`);
-}
-html.push('</tbody></table>');
-elTableWrap.innerHTML = html.join('');
-// wire actions
-elTableWrap.querySelectorAll('button[data-act]').forEach(btn=>{
-btn.addEventListener('click', async (ev)=>{
-const act = btn.getAttribute('data-act');
-const rowId = btn.closest('tr').getAttribute('data-id');
-if(act==='edit'){
-const row = rows.find(r=>r.rowId===rowId);
-editing = rowId;
-elName.value = row.name;
-elDoc.value = row.doc;
-elName.focus();
-}
-if(act==='del'){
-if(confirm('Excluir este atleta?')){
-await apiDelete(rowId);
-await loadData();
-}
-}
-});
-});
-}
-
 
 function escapeHtml(s){
-return String(s||'').replace(/[&<>"]+/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  return String(s||'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 }
 
-
-// ===== API =====
-  async function apiList(){
+function slugTeam(name){
+  return (name||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // remove acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-')                      // troca espaços/pontuação por hífen
+    .replace(/(^-|-$)/g,'');                         // limpa hifens nas bordas
 }
 
+function storeSession(){ localStorage.setItem('apecad_session', JSON.stringify(session)); }
+function loadSession(){
+  try{ return JSON.parse(localStorage.getItem('apecad_session')||'{}'); }
+  catch(e){ return {}; }
+}
+
+function show(view){
+  if(view==='app'){
+    elLogin.style.display='none';
+    elApp.style.display='block';
+    elTitle.textContent = session.team;
+    elUserTag.style.display='inline-block';
+    elUserTag.textContent = `Time: ${session.team}`;
+    elLogout.style.display='inline-block';
+  }else{
+    elLogin.style.display='block';
+    elApp.style.display='none';
+    elUserTag.style.display='none';
+    elLogout.style.display='none';
+  }
+}
+
+/* ========= API ========= */
+async function apiCall(payload){
+  const res = await fetch(WEB_APP_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  let data;
+  try{ data = await res.json(); }
+  catch(e){ throw new Error('Resposta inválida do servidor'); }
+  if(!data.ok) throw new Error(data.error||'Erro na operação');
+  return data;
+}
+
+async function apiList(){
+  const data = await apiCall({
+    route:'list',
+    team: slugTeam(session.team),
+    apiKey: session.apiKey
+  });
+  // normaliza pro renderer
+  return (data.items||[]).map(r=>({
+    rowId: r.rowId, name: r.name, doc: r.doc
+  }));
+}
+
+async function apiSave({rowId, name, doc}){
+  return apiCall({
+    route:'save',
+    team: slugTeam(session.team),
+    apiKey: session.apiKey,
+    rowId, name, doc
+  });
+}
 
 async function apiDelete(rowId){
-const res = await fetch(WEB_APP_URL,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-route:'del',
-team: slugTeam(session.team),
-apiKey: session.apiKey,
-rowId
-})
-});
-const data = await res.json();
-if(!data.ok) throw new Error(data.error||'Erro');
-return data;
+  return apiCall({
+    route:'del',
+    team: slugTeam(session.team),
+    apiKey: session.apiKey,
+    rowId
+  });
 }
 
+/* ========= RENDER ========= */
+function renderTable(rows){
+  if(!rows || !rows.length){
+    elTable.innerHTML = `<div class="empty">Nenhum atleta cadastrado.</div>`;
+    return;
+  }
+  const html = [`<table><thead><tr>
+    <th>Nome completo</th><th>RG/CPF</th><th style="width:200px">Ações</th>
+  </tr></thead><tbody>`];
+  for(const r of rows){
+    html.push(`<tr data-id="${r.rowId}">
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.doc)}</td>
+      <td>
+        <div class="actions">
+          <button class="pill ok"  data-act="edit">Editar</button>
+          <button class="pill del" data-act="del">Excluir</button>
+        </div>
+      </td>
+    </tr>`);
+  }
+  html.push('</tbody></table>');
+  elTable.innerHTML = html.join('');
 
+  // eventos de ação (delegation)
+  elTable.querySelector('tbody').addEventListener('click', async (ev)=>{
+    const btn = ev.target.closest('button[data-act]');
+    if(!btn) return;
+    const tr = btn.closest('tr'); const rowId = tr?.dataset?.id;
+    if(!rowId) return;
+    const act = btn.dataset.act;
+
+    if(act==='edit'){
+      // pega dados atuais da linha para o form
+      const tds = tr.querySelectorAll('td');
+      const name = tds[0].textContent.trim();
+      const doc  = tds[1].textContent.trim();
+      editing = rowId;
+      elName.value = name;
+      elDoc.value  = doc;
+      elName.focus();
+      showToast('Editando atleta…');
+    }
+
+    if(act==='del'){
+      if(!confirm('Excluir este atleta?')) return;
+      try{
+        await apiDelete(rowId);
+        showToast('Excluído');
+        await loadData();
+      }catch(err){ alert(err.message); }
+    }
+  }, { once:true });
+}
+
+/* ========= LOAD ========= */
 async function loadData(){
-elTableWrap.innerHTML = `<div class="empty">Carregando jogadores…</div>`;
-try{
-const rows = await apiList();
-renderTable(rows);
-}catch(err){
-elTableWrap.innerHTML = `<div class="empty">Erro: ${escapeHtml(err.message)}</div>`;
-}
+  elTable.innerHTML = `<div class="empty">Carregando jogadores…</div>`;
+  try{
+    const rows = await apiList();
+    renderTable(rows);
+  }catch(err){
+    elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(err.message)}</div>`;
+  }
 }
 
-
-// ===== EVENTS =====
-elEnter.addEventListener('click', async ()=>{
-const team = elTeam.value.trim();
-const apiKey = elKey.value.trim();
-if(!team || !apiKey){
-alert('Selecione o time e informe a chave.');
-return;
-}
-session = { team, apiKey };
-storeSession();
-show('app');
-loadData();
+/* ========= EVENTS ========= */
+elEnter.addEventListener('click', ()=>{
+  const team = elTeam.value.trim();
+  const apiKey = elKey.value.trim();
+  if(!team || !apiKey){ alert('Selecione o time e informe a chave.'); return; }
+  session = { team, apiKey };
+  storeSession();
+  show('app');
+  loadData();
 });
-
 
 elLogout.addEventListener('click', ()=>{
-localStorage.removeItem('apecad_session');
-session = {team:'', apiKey:''};
-editing = null;
-elName.value = '';
-elDoc.value='';
-elTeam.value='';
-elKey.value='';
-show('login');
+  localStorage.removeItem('apecad_session');
+  session = {team:'', apiKey:''};
+  editing = null;
+  elTeam.value = ''; elKey.value = '';
+  elName.value = ''; elDoc.value = '';
+  show('login');
 });
-
 
 elRefresh.addEventListener('click', loadData);
 
-
 elForm.addEventListener('submit', async (ev)=>{
-ev.preventDefault();
-const name = elName.value.trim();
-const doc = elDoc.value.trim();
-if(!name || !doc){
-alert('Preencha nome e RG/CPF.');
-return;
-}
+  ev.preventDefault();
+  const name = elName.value.trim();
+  const doc  = elDoc.value.trim();
+  if(!name || !doc){ alert('Preencha nome e RG/CPF.'); return; }
+
   try{
-await apiSave({rowId: editing, name, doc});
-editing = null;
-elName.value='';
-elDoc.value='';
-await loadData();
-}catch(err){
-alert('Erro ao salvar: '+err.message);
-}
+    await apiSave({ rowId: editing, name, doc });
+    editing = null;
+    elName.value=''; elDoc.value='';
+    showToast('Salvo');
+    await loadData();
+  }catch(err){
+    alert('Erro ao salvar: ' + err.message);
+  }
 });
 
-
-// ===== INIT =====
-(async function init(){
-const saved = loadSession();
-if(saved && saved.team && saved.apiKey){
-session = saved;
-show('app');
-loadData();
-} else {
-show('login');
-}
+/* ========= INIT ========= */
+(function init(){
+  const saved = loadSession();
+  if(saved && saved.team && saved.apiKey){
+    session = saved; show('app'); loadData();
+  } else {
+    show('login');
+  }
 })();
 </script>
 </body>
