@@ -23,6 +23,7 @@ button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .hint{font-size:12px;color:var(--muted)}
 .tag{background:#172036;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:#cbd5e1}
+.summary{font-size:13px;color:#cbd5e1}
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px;min-height:64px}
 table{width:100%;border-collapse:collapse;min-width:560px}
 thead th{background:#0c1424;font-size:12px;color:#a3a3a3;text-align:left;padding:10px;border-bottom:1px solid var(--line)}
@@ -39,6 +40,7 @@ tbody tr:hover{background:#0d1629}
 .toast.show{opacity:1;transform:translateY(0)}
 .loader{display:inline-block;width:14px;height:14px;border:2px solid #94a3b8;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.err{background:rgba(239,68,68,.12);border:1px solid #7f1d1d;color:#fecaca;padding:10px;border-radius:10px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -59,7 +61,7 @@ tbody tr:hover{background:#0d1629}
         <label for="team">Selecione o time</label>
         <select id="team">
           <option value="">— Escolha —</option>
-          <option>Alvorada</option>
+         <option>Alvorada</option>
 <option>Vila Real Futebol Club</option>
 <option>Envictors</option>
 <option>Moto Futebol Clube</option>
@@ -80,14 +82,16 @@ tbody tr:hover{background:#0d1629}
       <button id="enterBtn">Entrar</button>
       <span id="loginHint" class="hint">Acesso restrito por time. Guarde sua chave com segurança.</span>
     </div>
+    <div id="loginError" class="err" style="display:none"></div>
   </section>
 
   <!-- App -->
   <section id="appCard" class="card" style="display:none">
     <div class="row" style="justify-content:space-between;margin-bottom:10px">
-      <div class="row" style="gap:12px">
+      <div class="row" style="gap:12px;align-items:baseline">
         <h2 id="teamTitle" style="margin:0"></h2>
         <span class="tag">Somente seu time</span>
+        <span id="summary" class="summary"></span>
       </div>
       <button id="refreshBtn" class="ghost">Recarregar</button>
     </div>
@@ -102,6 +106,7 @@ tbody tr:hover{background:#0d1629}
       <button id="saveBtn" type="submit">Adicionar / Salvar</button>
     </form>
     <div class="hint" style="margin-top:6px">Dica: clique em <b>Editar</b> para carregar os dados e salvar as alterações.</div>
+    <div id="saveError" class="err" style="display:none"></div>
   </section>
 </main>
 
@@ -120,7 +125,8 @@ const qs = s => document.querySelector(s);
 const elLogin=qs('#loginCard'), elApp=qs('#appCard'), elTeam=qs('#team'), elKey=qs('#key');
 const elEnter=qs('#enterBtn'), elTitle=qs('#teamTitle'), elTag=qs('#userTag'), elLogout=qs('#logoutBtn');
 const elRefresh=qs('#refreshBtn'), elTable=qs('#tableWrap'), elForm=qs('#playerForm');
-const elName=qs('#fullName'), elDoc=qs('#doc'), elToast=qs('#toast'), elLoginHint=qs('#loginHint');
+const elName=qs('#fullName'), elDoc=qs('#doc'), elToast=qs('#toast');
+const elSummary=qs('#summary'), elLoginHint=qs('#loginHint'), elLoginError=qs('#loginError'), elSaveError=qs('#saveError');
 
 function show(view){
   if(view==='app'){
@@ -145,13 +151,15 @@ async function apiCall(payload){
     headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
     body: new URLSearchParams(payload)
   });
-  let data; try{ data = await res.json(); }catch(e){ throw new Error('Resposta inválida do servidor'); }
+  let data; 
+  try{ data = await res.json(); }
+  catch(e){ throw new Error('Resposta inválida do servidor'); }
   if(!data.ok) throw new Error(data.error||'Erro');
   return data;
 }
 async function apiList(){
   const { items } = await apiCall({ route:'list', team: slugTeam(session.team), apiKey: session.apiKey });
-  return (items||[]).map(r=>({ rowId:r.rowId, name:r.name, doc:r.doc }));
+  return (items||[]).map(r=>({ rowId:r.rowId, name:r.name, doc:r.doc, modified_on:r.modified_on }));
 }
 async function apiSave({rowId,name,doc}){
   return apiCall({ route:'save', team: slugTeam(session.team), apiKey: session.apiKey, rowId, name, doc });
@@ -162,6 +170,10 @@ async function apiDelete(rowId){
 
 /* ====== RENDER ====== */
 function renderTable(rows){
+  const total = rows.length;
+  const last = rows.reduce((a,b)=> a || b.modified_on, '');
+  elSummary.textContent = total ? `• ${total} atleta(s)` + (last?` • Atualizado: ${new Date(last).toLocaleString()}`:'') : '';
+
   if(!rows.length){ elTable.innerHTML=`<div class="empty">Nenhum atleta cadastrado.</div>`; return; }
   const html=[`<table><thead><tr><th>Nome completo</th><th>RG/CPF</th><th style="width:200px">Ações</th></tr></thead><tbody>`];
   for(const r of rows){
@@ -186,7 +198,7 @@ function renderTable(rows){
       elName.focus(); toast('Editando…');
     }else if(act==='del'){
       if(!confirm('Excluir este atleta?')) return;
-      try{ await apiDelete(id); toast('Excluído'); await loadData(); }catch(e){ alert(e.message); }
+      try{ await apiDelete(id); toast('Excluído'); await loadData(); }catch(e){ showSaveError(e.message); }
     }
   };
   tbody.addEventListener('click', handler, { once:true }); // reanexa a cada render
@@ -194,22 +206,28 @@ function renderTable(rows){
 
 /* ====== LOAD ====== */
 async function loadData(){
+  elSaveError.style.display='none';
   elTable.innerHTML = `<div class="empty">Carregando jogadores… <span class="loader"></span></div>`;
   try{ const rows = await apiList(); renderTable(rows); }
   catch(e){ elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`; }
 }
 
+/* ====== ERR UI ====== */
+function showLoginError(msg){ elLoginError.textContent = msg; elLoginError.style.display='block'; }
+function showSaveError(msg){ elSaveError.textContent = `Erro: ${msg}`; elSaveError.style.display='block'; }
+
 /* ====== EVENTS ====== */
 elEnter.onclick = async ()=>{
   const team = elTeam.value.trim(), apiKey = elKey.value.trim();
-  if(!team || !apiKey){ alert('Selecione o time e informe a chave.'); return; }
+  elLoginError.style.display='none';
+  if(!team || !apiKey){ showLoginError('Selecione o time e informe a chave.'); return; }
   elEnter.disabled = true; elLoginHint.innerHTML = 'Validando… <span class="loader"></span>';
   try{
-    // valida a chave chamando list
-    session = { team, apiKey }; await apiList(); saveSess();
-    show('app'); loadData();
+    session = { team, apiKey };
+    await apiList(); // valida
+    saveSess(); show('app'); loadData();
   }catch(e){
-    alert(e.message); localStorage.removeItem('apecad_session');
+    showLoginError(e.message); localStorage.removeItem('apecad_session');
   }finally{
     elEnter.disabled = false; elLoginHint.textContent = 'Acesso restrito por time. Guarde sua chave com segurança.';
   }
@@ -221,15 +239,17 @@ elLogout.onclick = ()=>{
   show('login');
 };
 elRefresh.onclick = loadData;
+
 elForm.onsubmit = async ev=>{
   ev.preventDefault();
+  elSaveError.style.display='none';
   const name = elName.value.trim(), doc = elDoc.value.trim();
-  if(!name || !doc){ alert('Preencha nome e RG/CPF.'); return; }
+  if(!name || !doc){ showSaveError('Preencha nome e RG/CPF.'); return; }
   try{
     await apiSave({ rowId: editing, name, doc });
     editing=null; elName.value=''; elDoc.value='';
     toast('Salvo'); await loadData();
-  }catch(e){ alert('Erro ao salvar: '+e.message); }
+  }catch(e){ showSaveError(e.message); }
 };
 
 /* ====== INIT ====== */
