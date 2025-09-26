@@ -69,7 +69,6 @@ tbody tr:hover{background:#0d1629}
         <label for="team">Selecione o time</label>
         <select id="team">
           <option value="">— Escolha —</option>
-          <!-- Use exatamente estes nomes (batem com seus slugs da planilha) -->
           <option>Alvorada</option>
           <option>Vila Real Futebol Club</option>
           <option>Envictors</option>
@@ -110,7 +109,7 @@ tbody tr:hover{background:#0d1629}
     </div>
 
     <div id="tableWrap" class="table-wrap">
-      <div class="empty">Carregando jogadores…</div>
+      <div class="empty">Nenhum atleta cadastrado.</div>
     </div>
 
     <form id="playerForm" class="form" autocomplete="off">
@@ -127,15 +126,15 @@ tbody tr:hover{background:#0d1629}
 <div id="toast" class="toast"></div>
 
 <script>
-/* ===== COLE AQUI A URL /exec DO APPS SCRIPT ===== */
+/* ===== cole sua URL /exec do Apps Script ===== */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4WFqrsBDm9wgaWJFzFGwFu_NvmTx_DsW0oH230XMGBzTLOdlJ5PoCeE9gsn-j9iKNxQ/exec";
 
-/* ===== STATE ===== */
+/* ===== state ===== */
 let session = { team:"", apiKey:"" };
-let editing = null;
-let rowsCache = []; // cache da última listagem
+let editing = null;          // rowId quando em edição
+let rowsCache = [];          // última listagem
 
-/* ===== HELPERS ===== */
+/* ===== helpers ===== */
 const qs = s => document.querySelector(s);
 const elLogin=qs('#loginCard'), elApp=qs('#appCard'), elTeam=qs('#team'), elKey=qs('#key');
 const elEnter=qs('#enterBtn'), elTitle=qs('#teamTitle'), elTag=qs('#userTag'), elLogout=qs('#logoutBtn');
@@ -155,40 +154,38 @@ function show(view){
   }
 }
 function toast(m){ elToast.textContent=m; elToast.classList.add('show'); setTimeout(()=>elToast.classList.remove('show'),1500); }
-function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&gt;","\"":"&quot;"}[c]));}
 function slugTeam(name){return (name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
 function saveSess(){localStorage.setItem('apecad_session',JSON.stringify(session));}
 function loadSess(){try{return JSON.parse(localStorage.getItem('apecad_session')||'{}')}catch(e){return {}}}
 
-/* ===== API (form-urlencoded → sem CORS; com erros claros) ===== */
+/* ===== API (form-urlencoded) ===== */
 async function apiCall(payload){
   const res = await fetch(WEB_APP_URL, {
     method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
     body: new URLSearchParams(payload)
   });
-
-  let text;
-  try { text = await res.text(); } catch { throw new Error('Sem resposta do servidor'); }
-  let data;
-  try { data = JSON.parse(text); }
-  catch { throw new Error(`Resposta inválida do servidor: ${text.slice(0,200)}`); }
-
-  if (!data.ok) { throw new Error(data.error || 'Erro desconhecido'); }
+  let text; try{ text = await res.text(); }catch{ throw new Error('Sem resposta do servidor'); }
+  let data; try{ data = JSON.parse(text); }catch{ throw new Error(`Resposta inválida do servidor: ${text.slice(0,200)}`); }
+  if (!data.ok) throw new Error(data.error || `Falha sem mensagem. Resposta: ${JSON.stringify(data).slice(0,200)}`);
   return data;
 }
 async function apiList(){
   const { items } = await apiCall({ route:'list', team: slugTeam(session.team), apiKey: session.apiKey });
   return (items||[]).map(r=>({ rowId:r.rowId, name:r.name, doc:r.doc, modified_on:r.modified_on }));
 }
-async function apiSave({rowId,name,doc}){
-  return apiCall({ route:'save', team: slugTeam(session.team), apiKey: session.apiKey, rowId, name, doc });
+/*  >>> CORREÇÃO AQUI: não envia rowId quando é novo  <<< */
+async function apiSave({ rowId, name, doc }){
+  const payload = { route:'save', team: slugTeam(session.team), apiKey: session.apiKey, name, doc };
+  if (rowId) payload.rowId = rowId; // só envia se existir
+  return apiCall(payload);
 }
 async function apiDelete(rowId){
   return apiCall({ route:'del', team: slugTeam(session.team), apiKey: session.apiKey, rowId });
 }
 
-/* ===== RENDER ===== */
+/* ===== render ===== */
 function applyFilter(rows, q){
   if(!q) return rows;
   const s = q.toLowerCase();
@@ -230,14 +227,13 @@ function renderTable(rows){
   });
 }
 
-/* ===== LOAD ===== */
+/* ===== load ===== */
 async function loadData(){
   hideSaveMessages();
   elTable.innerHTML = `<div class="empty">Carregando jogadores… <span class="loader"></span></div>`;
   try{
     rowsCache = await apiList();
-    const filtered = applyFilter(rowsCache, elSearch.value.trim());
-    renderTable(filtered);
+    renderTable(applyFilter(rowsCache, elSearch.value.trim()));
   }catch(e){
     elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
   }
@@ -251,26 +247,24 @@ function exportCSV(){
   const csv = lines.map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `atletas_${slugTeam(session.team)}.csv`; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = `atletas_${slugTeam(session.team)}.csv`; a.click();
   URL.revokeObjectURL(url);
 }
 
-/* ===== ERR UI ===== */
+/* ===== UI erros ===== */
 function hideSaveMessages(){ elSaveError.style.display='none'; elSaveOk.style.display='none'; }
 function showLoginError(msg){ elLoginError.textContent = msg; elLoginError.style.display='block'; }
 function showSaveError(msg){ elSaveError.textContent = `Erro: ${msg}`; elSaveError.style.display='block'; }
 function showSaveOk(msg){ elSaveOk.textContent = msg; elSaveOk.style.display='block'; }
 
-/* ===== EVENTS ===== */
-elEnter.onclick = async ()=>{
+/* ===== events ===== */
+qs('#enterBtn').onclick = async ()=>{
   const team = elTeam.value.trim(), apiKey = elKey.value.trim();
   elLoginError.style.display='none';
   if(!team || !apiKey){ showLoginError('Selecione o time e informe a chave.'); return; }
   elEnter.disabled = true; elLoginHint.innerHTML = 'Validando… <span class="loader"></span>';
   try{
-    session = { team, apiKey };
-    await apiList(); // valida chave/slug
+    session = { team, apiKey }; await apiList(); // valida
     saveSess(); show('app'); loadData();
   }catch(e){
     showLoginError(e.message); localStorage.removeItem('apecad_session');
@@ -278,7 +272,7 @@ elEnter.onclick = async ()=>{
     elEnter.disabled = false; elLoginHint.textContent = 'Acesso restrito por time. Guarde sua chave com segurança.';
   }
 };
-elLogout.onclick = ()=>{
+qs('#logoutBtn').onclick = ()=>{
   localStorage.removeItem('apecad_session');
   session={team:'',apiKey:''}; editing=null;
   elTeam.value=''; elKey.value=''; elName.value=''; elDoc.value='';
@@ -288,8 +282,7 @@ elRefresh.onclick = loadData;
 elExport.onclick = exportCSV;
 
 elSearch.addEventListener('input', ()=>{
-  const filtered = applyFilter(rowsCache, elSearch.value.trim());
-  renderTable(filtered);
+  renderTable(applyFilter(rowsCache, elSearch.value.trim()));
 });
 
 elForm.onsubmit = async ev=>{
@@ -299,12 +292,13 @@ elForm.onsubmit = async ev=>{
   if(!name || !doc){ showSaveError('Preencha nome e RG/CPF.'); return; }
   try{
     await apiSave({ rowId: editing, name, doc });
-    editing=null; elName.value=''; elDoc.value='';
+    editing = null;                   // <- sai do modo edição
+    elName.value = ''; elDoc.value = '';
     showSaveOk('Salvo com sucesso'); toast('Salvo'); await loadData();
   }catch(e){ showSaveError(e.message); }
 };
 
-/* ===== INIT ===== */
+/* ===== init ===== */
 (function(){
   const saved = loadSess();
   if(saved && saved.team && saved.apiKey){ session=saved; show('app'); loadData(); }
