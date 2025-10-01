@@ -1,309 +1,700 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cadastro de Atletas — APECAD</title>
-<style>
-:root{--bg:#0f172a;--panel:#111827;--ink:#e5e7eb;--muted:#9ca3af;--brand:#f59e0b;--line:#1f2937;--card:#0b1220;--r:16px}
-*{box-sizing:border-box}
-body{margin:0;background:linear-gradient(160deg,var(--bg),#060a12);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,0));position:sticky;top:0;backdrop-filter:blur(6px);z-index:50}
-h1{font-size:18px;margin:0;font-weight:800}
-.wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.grid{display:grid;gap:16px}
-.grid.cols-2{grid-template-columns:1fr 1fr}
-@media (max-width:900px){.grid.cols-2{grid-template-columns:1fr}}
-label{font-size:12px;color:var(--muted)}
-select,input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0a0f1a;color:#e5e7eb;outline:none}
-input::placeholder{color:#6b7280}
-button{appearance:none;border:none;border-radius:12px;padding:12px 16px;background:var(--brand);color:#111;font-weight:800;cursor:pointer}
-button.ghost{background:transparent;color:#e5e7eb;border:1px solid var(--line)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.hint{font-size:12px;color:var(--muted)}
-.tag{background:#172036;border:1px solid var(--line);padding:6px 10px;border-radius:10px;color:#cbd5e1}
-.tools{display:flex;gap:8px;flex-wrap:wrap}
-.tool input{min-width:220px}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cadastro de Atletas — APECAD</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --ink: #e5e7eb;
+        --muted: #9ca3af;
+        --brand: #f59e0b;
+        --line: #1f2937;
+        --card: #0b1220;
+        --r: 16px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(160deg, var(--bg), #060a12);
+        color: var(--ink);
+        font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial,
+          sans-serif;
+      }
+      header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(0, 0, 0, 0)
+        );
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(6px);
+        z-index: 50;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 800;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .grid.cols-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      @media (max-width: 900px) {
+        .grid.cols-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      select,
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #0a0f1a;
+        color: #e5e7eb;
+        outline: none;
+      }
+      input::placeholder {
+        color: #6b7280;
+      }
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 16px;
+        background: var(--brand);
+        color: #111;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      button.ghost {
+        background: transparent;
+        color: #e5e7eb;
+        border: 1px solid var(--line);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tag {
+        background: #172036;
+        border: 1px solid var(--line);
+        padding: 6px 10px;
+        border-radius: 10px;
+        color: #cbd5e1;
+      }
+      .tools {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tool input {
+        min-width: 220px;
+      }
 
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px;min-height:64px}
-table{width:100%;border-collapse:collapse;min-width:640px}
-thead th{background:#0c1424;font-size:12px;color:#a3a3a3;text-align:left;padding:10px;border-bottom:1px solid var(--line)}
-tbody td{padding:10px;border-bottom:1px solid var(--line)}
-tbody tr:hover{background:#0d1629}
-.actions{display:flex;gap:8px}
-.pill{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:#0a0f1a;color:#e5e7eb;cursor:pointer}
-.pill.ok{border-color:#064e3b;background:rgba(34,197,94,.12);color:#bbf7d0}
-.pill.del{border-color:#7f1d1d;background:rgba(239,68,68,.12);color:#fecaca}
+      .table-wrap {
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-top: 8px;
+        min-height: 64px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 640px;
+      }
+      thead th {
+        background: #0c1424;
+        font-size: 12px;
+        color: #a3a3a3;
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      tbody td {
+        padding: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      tbody tr:hover {
+        background: #0d1629;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+      .pill {
+        padding: 6px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #0a0f1a;
+        color: #e5e7eb;
+        cursor: pointer;
+      }
+      .pill.ok {
+        border-color: #064e3b;
+        background: rgba(34, 197, 94, 0.12);
+        color: #bbf7d0;
+      }
+      .pill.del {
+        border-color: #7f1d1d;
+        background: rgba(239, 68, 68, 0.12);
+        color: #fecaca;
+      }
 
-.form{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:12px}
-@media (max-width:700px){.form{grid-template-columns:1fr}}
-.empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:#9ca3af;text-align:center}
+      .form {
+        display: grid;
+        grid-template-columns: 2fr 1fr auto;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      @media (max-width: 700px) {
+        .form {
+          grid-template-columns: 1fr;
+        }
+      }
+      .empty {
+        padding: 18px;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        color: #9ca3af;
+        text-align: center;
+      }
 
-.toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid var(--line);padding:10px 14px;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.25s}
-.toast.show{opacity:1;transform:translateY(0)}
+      .toast {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        background: #0b1220;
+        border: 1px solid var(--line);
+        padding: 10px 14px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: 0.25s;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
 
-.loader{display:inline-block;width:14px;height:14px;border:2px solid #94a3b8;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
+      .loader {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #94a3b8;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        vertical-align: middle;
+        margin-left: 6px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-.err{background:rgba(239,68,68,.12);border:1px solid #7f1d1d;color:#fecaca;padding:10px;border-radius:10px;margin-top:8px}
-.ok{background:rgba(34,197,94,.12);border:1px solid #064e3b;color:#bbf7d0;padding:10px;border-radius:10px;margin-top:8px}
-.summary{font-size:13px;color:#cbd5e1}
-</style>
-</head>
-<body>
-<header>
-  <h1>Cadastro de Atletas — APECAD</h1>
-  <div class="row">
-    <span id="userTag" class="tag" style="display:none"></span>
-    <button id="logoutBtn" class="ghost" style="display:none">Sair</button>
-  </div>
-</header>
-
-<main class="wrap">
-  <!-- LOGIN -->
-  <section id="loginCard" class="card">
-    <h2 style="margin:0 0 10px">Entrar no seu Time</h2>
-    <div class="grid cols-2">
-      <div>
-        <label for="team">Selecione o time</label>
-        <select id="team">
-          <option value="">— Escolha —</option>
-          <option>Alvorada</option>
-          <option>Vila Real Futebol Club</option>
-          <option>Envictors</option>
-          <option>Moto Futebol Clube</option>
-          <option>Sem Limites FC</option>
-          <option>Resenha18 FC</option>
-          <option>Ratos FC</option>
-          <option>Meninos da Feira</option>
-          <option>Novo Aurora FC</option>
-          <option>Paysandu City FCS</option>
-        </select>
+      .err {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid #7f1d1d;
+        color: #fecaca;
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 8px;
+      }
+      .ok {
+        background: rgba(34, 197, 94, 0.12);
+        border: 1px solid #064e3b;
+        color: #bbf7d0;
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 8px;
+      }
+      .summary {
+        font-size: 13px;
+        color: #cbd5e1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Cadastro de Atletas — APECAD</h1>
+      <div class="row">
+        <span id="userTag" class="tag" style="display: none"></span>
+        <button id="logoutBtn" class="ghost" style="display: none">Sair</button>
       </div>
-      <div>
-        <label for="key">Chave de acesso</label>
-        <input id="key" type="password" placeholder="Informe a chave do seu time"/>
-      </div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <button id="enterBtn">Entrar</button>
-      <span id="loginHint" class="hint">Acesso restrito por time. Guarde sua chave com segurança.</span>
-    </div>
-    <div id="loginError" class="err" style="display:none"></div>
-  </section>
+    </header>
 
-  <!-- APP -->
-  <section id="appCard" class="card" style="display:none">
-    <div class="row" style="justify-content:space-between;margin-bottom:8px">
-      <div class="row" style="gap:12px;align-items:baseline">
-        <h2 id="teamTitle" style="margin:0"></h2>
-        <span class="tag">Somente seu time</span>
-        <span id="summary" class="summary"></span>
-      </div>
-      <div class="tools">
-        <div class="tool"><input id="search" type="text" placeholder="Buscar por nome/CPF…"/></div>
-        <button id="exportBtn" class="ghost">Exportar CSV</button>
-        <button id="refreshBtn" class="ghost">Recarregar</button>
-      </div>
-    </div>
+    <main class="wrap">
+      <!-- LOGIN -->
+      <section id="loginCard" class="card">
+        <h2 style="margin: 0 0 10px">Entrar no seu Time</h2>
+        <div class="grid cols-2">
+          <div>
+            <label for="team">Selecione o time</label>
+            <select id="team">
+              <option value="">— Escolha —</option>
+              <option>Alvorada</option>
+              <option>Vila Real Futebol Club</option>
+              <option>Envictors</option>
+              <option>Olympique Lyonnais</option>
+              <option>Sem Limites FC</option>
+              <option>Resenha18 FC</option>
+              <option>Ratos FC</option>
+              <option>Meninos da Feira</option>
+              <option>Novo Aurora FC</option>
+              <option>Paysandu City FCS</option>
+            </select>
+          </div>
+          <div>
+            <label for="key">Chave de acesso</label>
+            <input
+              id="key"
+              type="password"
+              placeholder="Informe a chave do seu time"
+            />
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+          <button id="enterBtn">Entrar</button>
+          <span id="loginHint" class="hint"
+            >Acesso restrito por time. Guarde sua chave com segurança.</span
+          >
+        </div>
+        <div id="loginError" class="err" style="display: none"></div>
+      </section>
 
-    <div id="tableWrap" class="table-wrap">
-      <div class="empty">Nenhum atleta cadastrado.</div>
-    </div>
+      <!-- APP -->
+      <section id="appCard" class="card" style="display: none">
+        <div
+          class="row"
+          style="justify-content: space-between; margin-bottom: 8px"
+        >
+          <div class="row" style="gap: 12px; align-items: baseline">
+            <h2 id="teamTitle" style="margin: 0"></h2>
+            <span class="tag">Somente seu time</span>
+            <span id="summary" class="summary"></span>
+          </div>
+          <div class="tools">
+            <div class="tool">
+              <input
+                id="search"
+                type="text"
+                placeholder="Buscar por nome/CPF…"
+              />
+            </div>
+            <button id="exportBtn" class="ghost">Exportar CSV</button>
+            <button id="refreshBtn" class="ghost">Recarregar</button>
+          </div>
+        </div>
 
-    <form id="playerForm" class="form" autocomplete="off">
-      <input id="fullName" type="text" placeholder="Nome completo" required/>
-      <input id="doc" type="text" placeholder="RG ou CPF" required/>
-      <button id="saveBtn" type="submit">Adicionar / Salvar</button>
-    </form>
-    <div class="hint" style="margin-top:6px">Dica: clique em <b>Editar</b> para carregar os dados e salvar as alterações.</div>
-    <div id="saveError" class="err" style="display:none"></div>
-    <div id="saveOk" class="ok" style="display:none"></div>
-  </section>
-</main>
+        <div id="tableWrap" class="table-wrap">
+          <div class="empty">Nenhum atleta cadastrado.</div>
+        </div>
 
-<div id="toast" class="toast"></div>
+        <form id="playerForm" class="form" autocomplete="off">
+          <input
+            id="fullName"
+            type="text"
+            placeholder="Nome completo"
+            required
+          />
+          <input id="doc" type="text" placeholder="RG ou CPF" required />
+          <button id="saveBtn" type="submit">Adicionar / Salvar</button>
+        </form>
+        <div class="hint" style="margin-top: 6px">
+          Dica: clique em <b>Editar</b> para carregar os dados e salvar as
+          alterações.
+        </div>
+        <div id="saveError" class="err" style="display: none"></div>
+        <div id="saveOk" class="ok" style="display: none"></div>
+      </section>
+    </main>
 
-<script>
-/* ===== cole sua URL /exec do Apps Script ===== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4WFqrsBDm9wgaWJFzFGwFu_NvmTx_DsW0oH230XMGBzTLOdlJ5PoCeE9gsn-j9iKNxQ/exec";
+    <div id="toast" class="toast"></div>
 
-/* ===== state ===== */
-let session = { team:"", apiKey:"" };
-let editing = null;          // rowId quando em edição
-let rowsCache = [];          // última listagem
+    <script>
+      /* ===== cole sua URL /exec do Apps Script ===== */
+      const WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycby4WFqrsBDm9wgaWJFzFGwFu_NvmTx_DsW0oH230XMGBzTLOdlJ5PoCeE9gsn-j9iKNxQ/exec";
 
-/* ===== helpers ===== */
-const qs = s => document.querySelector(s);
-const elLogin=qs('#loginCard'), elApp=qs('#appCard'), elTeam=qs('#team'), elKey=qs('#key');
-const elEnter=qs('#enterBtn'), elTitle=qs('#teamTitle'), elTag=qs('#userTag'), elLogout=qs('#logoutBtn');
-const elRefresh=qs('#refreshBtn'), elTable=qs('#tableWrap'), elForm=qs('#playerForm');
-const elName=qs('#fullName'), elDoc=qs('#doc'), elToast=qs('#toast'), elSearch=qs('#search');
-const elSummary=qs('#summary'), elLoginHint=qs('#loginHint'), elLoginError=qs('#loginError');
-const elSaveError=qs('#saveError'), elSaveOk=qs('#saveOk'), elExport=qs('#exportBtn');
+      /* ===== state ===== */
+      let session = { team: "", apiKey: "" };
+      let editing = null; // rowId quando em edição
+      let rowsCache = []; // última listagem
 
-function show(view){
-  if(view==='app'){
-    elLogin.style.display='none'; elApp.style.display='block';
-    elTitle.textContent = session.team; elTag.textContent = `Time: ${session.team}`;
-    elTag.style.display='inline-block'; elLogout.style.display='inline-block';
-  }else{
-    elLogin.style.display='block'; elApp.style.display='none';
-    elTag.style.display='none'; elLogout.style.display='none';
-  }
-}
-function toast(m){ elToast.textContent=m; elToast.classList.add('show'); setTimeout(()=>elToast.classList.remove('show'),1500); }
-function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&gt;","\"":"&quot;"}[c]));}
-function slugTeam(name){return (name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
-function saveSess(){localStorage.setItem('apecad_session',JSON.stringify(session));}
-function loadSess(){try{return JSON.parse(localStorage.getItem('apecad_session')||'{}')}catch(e){return {}}}
+      /* ===== helpers ===== */
+      const qs = (s) => document.querySelector(s);
+      const elLogin = qs("#loginCard"),
+        elApp = qs("#appCard"),
+        elTeam = qs("#team"),
+        elKey = qs("#key");
+      const elEnter = qs("#enterBtn"),
+        elTitle = qs("#teamTitle"),
+        elTag = qs("#userTag"),
+        elLogout = qs("#logoutBtn");
+      const elRefresh = qs("#refreshBtn"),
+        elTable = qs("#tableWrap"),
+        elForm = qs("#playerForm");
+      const elName = qs("#fullName"),
+        elDoc = qs("#doc"),
+        elToast = qs("#toast"),
+        elSearch = qs("#search");
+      const elSummary = qs("#summary"),
+        elLoginHint = qs("#loginHint"),
+        elLoginError = qs("#loginError");
+      const elSaveError = qs("#saveError"),
+        elSaveOk = qs("#saveOk"),
+        elExport = qs("#exportBtn");
 
-/* ===== API (form-urlencoded) ===== */
-async function apiCall(payload){
-  const res = await fetch(WEB_APP_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
-    body: new URLSearchParams(payload)
-  });
-  let text; try{ text = await res.text(); }catch{ throw new Error('Sem resposta do servidor'); }
-  let data; try{ data = JSON.parse(text); }catch{ throw new Error(`Resposta inválida do servidor: ${text.slice(0,200)}`); }
-  if (!data.ok) throw new Error(data.error || `Falha sem mensagem. Resposta: ${JSON.stringify(data).slice(0,200)}`);
-  return data;
-}
-async function apiList(){
-  const { items } = await apiCall({ route:'list', team: slugTeam(session.team), apiKey: session.apiKey });
-  return (items||[]).map(r=>({ rowId:r.rowId, name:r.name, doc:r.doc, modified_on:r.modified_on }));
-}
-/*  >>> CORREÇÃO AQUI: não envia rowId quando é novo  <<< */
-async function apiSave({ rowId, name, doc }){
-  const payload = { route:'save', team: slugTeam(session.team), apiKey: session.apiKey, name, doc };
-  if (rowId) payload.rowId = rowId; // só envia se existir
-  return apiCall(payload);
-}
-async function apiDelete(rowId){
-  return apiCall({ route:'del', team: slugTeam(session.team), apiKey: session.apiKey, rowId });
-}
+      function show(view) {
+        if (view === "app") {
+          elLogin.style.display = "none";
+          elApp.style.display = "block";
+          elTitle.textContent = session.team;
+          elTag.textContent = `Time: ${session.team}`;
+          elTag.style.display = "inline-block";
+          elLogout.style.display = "inline-block";
+        } else {
+          elLogin.style.display = "block";
+          elApp.style.display = "none";
+          elTag.style.display = "none";
+          elLogout.style.display = "none";
+        }
+      }
+      function toast(m) {
+        elToast.textContent = m;
+        elToast.classList.add("show");
+        setTimeout(() => elToast.classList.remove("show"), 1500);
+      }
+      function escapeHtml(s) {
+        return String(s || "").replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&gt;", '"': "&quot;" }[c])
+        );
+      }
+      function slugTeam(name) {
+        return (name || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+      }
+      function saveSess() {
+        localStorage.setItem("apecad_session", JSON.stringify(session));
+      }
+      function loadSess() {
+        try {
+          return JSON.parse(localStorage.getItem("apecad_session") || "{}");
+        } catch (e) {
+          return {};
+        }
+      }
 
-/* ===== render ===== */
-function applyFilter(rows, q){
-  if(!q) return rows;
-  const s = q.toLowerCase();
-  return rows.filter(r => (r.name||'').toLowerCase().includes(s) || (r.doc||'').toLowerCase().includes(s));
-}
-function renderSummary(rows){
-  const total = rows.length;
-  const last = rows.reduce((acc,cur)=> acc || cur.modified_on, '');
-  elSummary.textContent = total ? `• ${total} atleta(s)` + (last?` • Atualizado: ${new Date(last).toLocaleString()}`:'') : '';
-}
-function renderTable(rows){
-  renderSummary(rows);
-  if(!rows.length){ elTable.innerHTML=`<div class="empty">Nenhum atleta cadastrado.</div>`; return; }
-  const html=[`<table><thead><tr><th>Nome completo</th><th>RG/CPF</th><th style="width:200px">Ações</th></tr></thead><tbody>`];
-  for(const r of rows){
-    html.push(`<tr data-id="${r.rowId}"><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.doc)}</td>
+      /* ===== API (form-urlencoded) ===== */
+      async function apiCall(payload) {
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          },
+          body: new URLSearchParams(payload),
+        });
+        let text;
+        try {
+          text = await res.text();
+        } catch {
+          throw new Error("Sem resposta do servidor");
+        }
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(
+            `Resposta inválida do servidor: ${text.slice(0, 200)}`
+          );
+        }
+        if (!data.ok)
+          throw new Error(
+            data.error ||
+              `Falha sem mensagem. Resposta: ${JSON.stringify(data).slice(
+                0,
+                200
+              )}`
+          );
+        return data;
+      }
+      async function apiList() {
+        const { items } = await apiCall({
+          route: "list",
+          team: slugTeam(session.team),
+          apiKey: session.apiKey,
+        });
+        return (items || []).map((r) => ({
+          rowId: r.rowId,
+          name: r.name,
+          doc: r.doc,
+          modified_on: r.modified_on,
+        }));
+      }
+      /*  >>> CORREÇÃO AQUI: não envia rowId quando é novo  <<< */
+      async function apiSave({ rowId, name, doc }) {
+        const payload = {
+          route: "save",
+          team: slugTeam(session.team),
+          apiKey: session.apiKey,
+          name,
+          doc,
+        };
+        if (rowId) payload.rowId = rowId; // só envia se existir
+        return apiCall(payload);
+      }
+      async function apiDelete(rowId) {
+        return apiCall({
+          route: "del",
+          team: slugTeam(session.team),
+          apiKey: session.apiKey,
+          rowId,
+        });
+      }
+
+      /* ===== render ===== */
+      function applyFilter(rows, q) {
+        if (!q) return rows;
+        const s = q.toLowerCase();
+        return rows.filter(
+          (r) =>
+            (r.name || "").toLowerCase().includes(s) ||
+            (r.doc || "").toLowerCase().includes(s)
+        );
+      }
+      function renderSummary(rows) {
+        const total = rows.length;
+        const last = rows.reduce((acc, cur) => acc || cur.modified_on, "");
+        elSummary.textContent = total
+          ? `• ${total} atleta(s)` +
+            (last ? ` • Atualizado: ${new Date(last).toLocaleString()}` : "")
+          : "";
+      }
+      function renderTable(rows) {
+        renderSummary(rows);
+        if (!rows.length) {
+          elTable.innerHTML = `<div class="empty">Nenhum atleta cadastrado.</div>`;
+          return;
+        }
+        const html = [
+          `<table><thead><tr><th>Nome completo</th><th>RG/CPF</th><th style="width:200px">Ações</th></tr></thead><tbody>`,
+        ];
+        for (const r of rows) {
+          html.push(`<tr data-id="${r.rowId}"><td>${escapeHtml(
+            r.name
+          )}</td><td>${escapeHtml(r.doc)}</td>
       <td><div class="actions">
         <button class="pill ok" data-act="edit">Editar</button>
         <button class="pill del" data-act="del">Excluir</button>
       </div></td></tr>`);
-  }
-  html.push('</tbody></table>');
-  elTable.innerHTML = html.join('');
+        }
+        html.push("</tbody></table>");
+        elTable.innerHTML = html.join("");
 
-  const tbody = elTable.querySelector('tbody');
-  tbody.addEventListener('click', async ev=>{
-    const btn = ev.target.closest('button[data-act]'); if(!btn) return;
-    const tr = btn.closest('tr'); const id = tr?.dataset?.id; if(!id) return;
-    const act = btn.dataset.act;
-    if(act==='edit'){
-      const tds=tr.querySelectorAll('td');
-      editing = id; elName.value=tds[0].textContent.trim(); elDoc.value=tds[1].textContent.trim();
-      elName.focus(); toast('Editando…');
-    }else if(act==='del'){
-      if(!confirm('Excluir este atleta?')) return;
-      try{ await apiDelete(id); toast('Excluído'); await loadData(); }
-      catch(e){ showSaveError(e.message); }
-    }
-  });
-}
+        const tbody = elTable.querySelector("tbody");
+        tbody.addEventListener("click", async (ev) => {
+          const btn = ev.target.closest("button[data-act]");
+          if (!btn) return;
+          const tr = btn.closest("tr");
+          const id = tr?.dataset?.id;
+          if (!id) return;
+          const act = btn.dataset.act;
+          if (act === "edit") {
+            const tds = tr.querySelectorAll("td");
+            editing = id;
+            elName.value = tds[0].textContent.trim();
+            elDoc.value = tds[1].textContent.trim();
+            elName.focus();
+            toast("Editando…");
+          } else if (act === "del") {
+            if (!confirm("Excluir este atleta?")) return;
+            try {
+              await apiDelete(id);
+              toast("Excluído");
+              await loadData();
+            } catch (e) {
+              showSaveError(e.message);
+            }
+          }
+        });
+      }
 
-/* ===== load ===== */
-async function loadData(){
-  hideSaveMessages();
-  elTable.innerHTML = `<div class="empty">Carregando jogadores… <span class="loader"></span></div>`;
-  try{
-    rowsCache = await apiList();
-    renderTable(applyFilter(rowsCache, elSearch.value.trim()));
-  }catch(e){
-    elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
-  }
-}
+      /* ===== load ===== */
+      async function loadData() {
+        hideSaveMessages();
+        elTable.innerHTML = `<div class="empty">Carregando jogadores… <span class="loader"></span></div>`;
+        try {
+          rowsCache = await apiList();
+          renderTable(applyFilter(rowsCache, elSearch.value.trim()));
+        } catch (e) {
+          elTable.innerHTML = `<div class="empty">Erro: ${escapeHtml(
+            e.message
+          )}</div>`;
+        }
+      }
 
-/* ===== CSV ===== */
-function exportCSV(){
-  const filtered = applyFilter(rowsCache, elSearch.value.trim());
-  const head = ['Nome completo','RG/CPF'];
-  const lines = [head, ...filtered.map(r => [r.name||'', r.doc||''])];
-  const csv = lines.map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `atletas_${slugTeam(session.team)}.csv`; a.click();
-  URL.revokeObjectURL(url);
-}
+      /* ===== CSV ===== */
+      function exportCSV() {
+        const filtered = applyFilter(rowsCache, elSearch.value.trim());
+        const head = ["Nome completo", "RG/CPF"];
+        const lines = [
+          head,
+          ...filtered.map((r) => [r.name || "", r.doc || ""]),
+        ];
+        const csv = lines
+          .map((row) =>
+            row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
+          )
+          .join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `atletas_${slugTeam(session.team)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
 
-/* ===== UI erros ===== */
-function hideSaveMessages(){ elSaveError.style.display='none'; elSaveOk.style.display='none'; }
-function showLoginError(msg){ elLoginError.textContent = msg; elLoginError.style.display='block'; }
-function showSaveError(msg){ elSaveError.textContent = `Erro: ${msg}`; elSaveError.style.display='block'; }
-function showSaveOk(msg){ elSaveOk.textContent = msg; elSaveOk.style.display='block'; }
+      /* ===== UI erros ===== */
+      function hideSaveMessages() {
+        elSaveError.style.display = "none";
+        elSaveOk.style.display = "none";
+      }
+      function showLoginError(msg) {
+        elLoginError.textContent = msg;
+        elLoginError.style.display = "block";
+      }
+      function showSaveError(msg) {
+        elSaveError.textContent = `Erro: ${msg}`;
+        elSaveError.style.display = "block";
+      }
+      function showSaveOk(msg) {
+        elSaveOk.textContent = msg;
+        elSaveOk.style.display = "block";
+      }
 
-/* ===== events ===== */
-qs('#enterBtn').onclick = async ()=>{
-  const team = elTeam.value.trim(), apiKey = elKey.value.trim();
-  elLoginError.style.display='none';
-  if(!team || !apiKey){ showLoginError('Selecione o time e informe a chave.'); return; }
-  elEnter.disabled = true; elLoginHint.innerHTML = 'Validando… <span class="loader"></span>';
-  try{
-    session = { team, apiKey }; await apiList(); // valida
-    saveSess(); show('app'); loadData();
-  }catch(e){
-    showLoginError(e.message); localStorage.removeItem('apecad_session');
-  }finally{
-    elEnter.disabled = false; elLoginHint.textContent = 'Acesso restrito por time. Guarde sua chave com segurança.';
-  }
-};
-qs('#logoutBtn').onclick = ()=>{
-  localStorage.removeItem('apecad_session');
-  session={team:'',apiKey:''}; editing=null;
-  elTeam.value=''; elKey.value=''; elName.value=''; elDoc.value='';
-  show('login');
-};
-elRefresh.onclick = loadData;
-elExport.onclick = exportCSV;
+      /* ===== events ===== */
+      qs("#enterBtn").onclick = async () => {
+        const team = elTeam.value.trim(),
+          apiKey = elKey.value.trim();
+        elLoginError.style.display = "none";
+        if (!team || !apiKey) {
+          showLoginError("Selecione o time e informe a chave.");
+          return;
+        }
+        elEnter.disabled = true;
+        elLoginHint.innerHTML = 'Validando… <span class="loader"></span>';
+        try {
+          session = { team, apiKey };
+          await apiList(); // valida
+          saveSess();
+          show("app");
+          loadData();
+        } catch (e) {
+          showLoginError(e.message);
+          localStorage.removeItem("apecad_session");
+        } finally {
+          elEnter.disabled = false;
+          elLoginHint.textContent =
+            "Acesso restrito por time. Guarde sua chave com segurança.";
+        }
+      };
+      qs("#logoutBtn").onclick = () => {
+        localStorage.removeItem("apecad_session");
+        session = { team: "", apiKey: "" };
+        editing = null;
+        elTeam.value = "";
+        elKey.value = "";
+        elName.value = "";
+        elDoc.value = "";
+        show("login");
+      };
+      elRefresh.onclick = loadData;
+      elExport.onclick = exportCSV;
 
-elSearch.addEventListener('input', ()=>{
-  renderTable(applyFilter(rowsCache, elSearch.value.trim()));
-});
+      elSearch.addEventListener("input", () => {
+        renderTable(applyFilter(rowsCache, elSearch.value.trim()));
+      });
 
-elForm.onsubmit = async ev=>{
-  ev.preventDefault();
-  hideSaveMessages();
-  const name = elName.value.trim(), doc = elDoc.value.trim();
-  if(!name || !doc){ showSaveError('Preencha nome e RG/CPF.'); return; }
-  try{
-    await apiSave({ rowId: editing, name, doc });
-    editing = null;                   // <- sai do modo edição
-    elName.value = ''; elDoc.value = '';
-    showSaveOk('Salvo com sucesso'); toast('Salvo'); await loadData();
-  }catch(e){ showSaveError(e.message); }
-};
+      elForm.onsubmit = async (ev) => {
+        ev.preventDefault();
+        hideSaveMessages();
+        const name = elName.value.trim(),
+          doc = elDoc.value.trim();
+        if (!name || !doc) {
+          showSaveError("Preencha nome e RG/CPF.");
+          return;
+        }
+        try {
+          await apiSave({ rowId: editing, name, doc });
+          editing = null; // <- sai do modo edição
+          elName.value = "";
+          elDoc.value = "";
+          showSaveOk("Salvo com sucesso");
+          toast("Salvo");
+          await loadData();
+        } catch (e) {
+          showSaveError(e.message);
+        }
+      };
 
-/* ===== init ===== */
-(function(){
-  const saved = loadSess();
-  if(saved && saved.team && saved.apiKey){ session=saved; show('app'); loadData(); }
-  else { show('login'); }
-})();
-</script>
-</body>
+      /* ===== init ===== */
+      (function () {
+        const saved = loadSess();
+        if (saved && saved.team && saved.apiKey) {
+          session = saved;
+          show("app");
+          loadData();
+        } else {
+          show("login");
+        }
+      })();
+    </script>
+  </body>
 </html>
