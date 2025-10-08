@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sorteio de Letras • APECAD</title>
+    <style>
+      :root {
+        --bg: #0f1216;
+        --card: #161b22;
+        --muted: #9aa4b2;
+        --text: #e6edf3;
+        --accent: #2f81f7;
+        --ok: #2ea043;
+        --warn: #d29922;
+        --err: #f85149;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+          Cantarell, Arial, Noto Sans, "Helvetica Neue", sans-serif;
+        background: linear-gradient(180deg, #0b0f14, #0f1216 40%, #0f1216);
+        color: var(--text);
+        display: flex;
+        min-height: 100svh;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 480px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid #222933;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 12px;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 12px;
+        line-height: 1.5;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin: 10px 0 6px;
+      }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #2a3140;
+        background: #0f141b;
+        color: var(--text);
+        outline: none;
+      }
+      input:focus {
+        border-color: #3b4457;
+      }
+      button {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 0;
+        color: #fff;
+        background: var(--accent);
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.02s ease;
+      }
+      button:active {
+        transform: translateY(1px);
+      }
+      button[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .result {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        background: #101720;
+        border: 1px dashed #263246;
+      }
+      .pill {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        background: #0d223a;
+        border: 1px solid #264c7e;
+      }
+      .pill.ok {
+        background: #0d2a17;
+        border-color: #1e5f30;
+      }
+      .pill.warn {
+        background: #2b2108;
+        border-color: #725016;
+      }
+      .pill.err {
+        background: #3a0f13;
+        border-color: #7e2630;
+      }
+      .center {
+        text-align: center;
+      }
+      .big-letter {
+        font-size: 52px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin: 6px 0 0;
+      }
+      .foot {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card" id="cardLogin">
+        <h1>Login do Time</h1>
+        <p>
+          Entre com <strong>time</strong> e <strong>senha</strong> para sortear
+          sua letra (A–L). Cada letra é única.
+        </p>
+        <label for="inpTime">Time</label>
+        <input
+          id="inpTime"
+          type="text"
+          placeholder="Ex.: Vila Real Futebol Club"
+          autocomplete="organization"
+        />
+        <label for="inpSenha">Senha</label>
+        <input
+          id="inpSenha"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+        <div style="height: 8px"></div>
+        <button id="btnLogin">Entrar</button>
+        <div class="result hidden" id="loginMsg"></div>
+      </div>
+
+      <div class="card hidden" id="cardSorteio">
+        <h1>Sorteio de Letra</h1>
+        <p class="muted">Time: <strong id="lblTime">—</strong></p>
+        <div id="boxAguardando">
+          <p>
+            Clique abaixo para sortear sua letra. O processo é
+            <strong>definitivo</strong>.
+          </p>
+          <button id="btnSortear">Sortear letra</button>
+        </div>
+        <div id="boxResultado" class="hidden center">
+          <span class="pill ok" id="lblStatus">Sorteio concluído</span>
+          <div class="big-letter" id="lblLetra">—</div>
+          <p class="muted" id="lblData"></p>
+        </div>
+        <div class="result hidden" id="drawMsg"></div>
+      </div>
+
+      <div class="foot">APECAD • sorteio seguro com Google Apps Script</div>
+    </div>
+
+    <script>
+      // >>>>> TROQUE pela URL do seu Web App (Implantação "Aplicativo da Web")
+      const WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbyCIPhsmPT3XeNCBDxsAY5I2iuJ9dp8sDH8VZzJxKc64CkmljX54SGxB0ONza5IFlWT/exec";
+
+      const $ = (s) => document.querySelector(s);
+      const loginCard = $("#cardLogin");
+      const sorteioCard = $("#cardSorteio");
+      const btnLogin = $("#btnLogin");
+      const loginMsg = $("#loginMsg");
+      const btnSortear = $("#btnSortear");
+      const drawMsg = $("#drawMsg");
+
+      let sessionToken = null;
+      let timeLogado = null;
+
+      // Enter para enviar
+      $("#inpSenha").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") btnLogin.click();
+      });
+
+      btnLogin.addEventListener("click", async () => {
+        clearBox(loginMsg);
+        const time = $("#inpTime").value.trim();
+        const senha = $("#inpSenha").value.trim();
+
+        if (!time || !senha)
+          return showBox(loginMsg, "Informe time e senha.", "warn");
+
+        btnLogin.disabled = true;
+        try {
+          const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            // sem headers → evita preflight CORS no Apps Script
+            body: JSON.stringify({ action: "login", time, senha }),
+          });
+          const data = await safeJson(res);
+          if (!data || !data.ok)
+            return showBox(
+              loginMsg,
+              (data && data.error) || "Falha no login.",
+              "err"
+            );
+
+          sessionToken = data.sessionToken;
+          timeLogado = data.time || time;
+          $("#lblTime").textContent = timeLogado;
+
+          if (data.letra) {
+            showResultado(data.letra, data.sorteadoEm, true);
+          } else {
+            loginCard.classList.add("hidden");
+            sorteioCard.classList.remove("hidden");
+          }
+        } catch (e) {
+          showBox(loginMsg, "Erro de conexão: " + e.message, "err");
+        } finally {
+          btnLogin.disabled = false;
+        }
+      });
+
+      btnSortear.addEventListener("click", async () => {
+        clearBox(drawMsg);
+        if (!sessionToken)
+          return showBox(
+            drawMsg,
+            "Sessão expirada. Faça login novamente.",
+            "warn"
+          );
+
+        btnSortear.disabled = true;
+        try {
+          const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "draw", sessionToken }),
+          });
+          const data = await safeJson(res);
+          if (!data || !data.ok)
+            return showBox(
+              drawMsg,
+              (data && data.error) || "Não foi possível sortear.",
+              "err"
+            );
+
+          showResultado(data.letra, data.sorteadoEm, !!data.alreadySorted);
+        } catch (e) {
+          showBox(drawMsg, "Erro de conexão: " + e.message, "err");
+        } finally {
+          btnSortear.disabled = false;
+        }
+      });
+
+      function showResultado(letra, sorteadoEm, already) {
+        $("#lblLetra").textContent = letra || "—";
+        $("#lblStatus").textContent = already
+          ? "Letra já sorteada"
+          : "Sorteio concluído";
+        $("#lblStatus").className = "pill " + (already ? "warn" : "ok");
+        const dt = sorteadoEm ? new Date(sorteadoEm) : new Date();
+        $("#lblData").textContent = "Gerado em: " + dt.toLocaleString();
+
+        loginCard.classList.add("hidden");
+        sorteioCard.classList.remove("hidden");
+        $("#boxAguardando").classList.add("hidden");
+        $("#boxResultado").classList.remove("hidden");
+      }
+
+      function showBox(elm, msg, type = "ok") {
+        elm.className = "result";
+        elm.classList.remove("hidden");
+        elm.innerHTML = `<span class="pill ${type}">${
+          type === "ok" ? "OK" : type === "warn" ? "Aviso" : "Erro"
+        }</span> ${escapeHtml(msg)}`;
+      }
+      function clearBox(elm) {
+        elm.classList.add("hidden");
+        elm.innerHTML = "";
+      }
+      function escapeHtml(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[m])
+        );
+      }
+
+      async function safeJson(res) {
+        const txt = await res.text();
+        try {
+          return JSON.parse(txt);
+        } catch {
+          return null;
+        }
+      }
+    </script>
+  </body>
+</html>
